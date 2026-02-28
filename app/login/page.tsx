@@ -74,9 +74,7 @@ export default function LoginPage() {
               <span className="font-body text-xs tracking-[0.2em] uppercase text-gold">
                 Authentication
               </span>
-              <h2 className="mt-3 font-serif text-2xl text-foreground">
-                Welcome Back
-              </h2>
+              <h2 className="mt-3 font-serif text-2xl text-foreground">Welcome Back</h2>
               <p className="mt-2 font-body text-sm text-muted-foreground">
                 Enter your credentials to access your collection
               </p>
@@ -148,9 +146,7 @@ export default function LoginPage() {
             {/* Divider */}
             <div className="flex items-center gap-4 my-8">
               <div className="h-px flex-1 bg-border"></div>
-              <span className="font-body text-xs text-muted-foreground">
-                or
-              </span>
+              <span className="font-body text-xs text-muted-foreground">or</span>
               <div className="h-px flex-1 bg-border"></div>
             </div>
 
@@ -158,10 +154,7 @@ export default function LoginPage() {
             <div className="text-center">
               <p className="font-body text-sm text-muted-foreground">
                 Not yet a member?{" "}
-                <Link
-                  href="/register"
-                  className="text-gold hover-underline transition-luxury"
-                >
+                <Link href="/register" className="text-gold hover-underline transition-luxury">
                   Subscribe now
                 </Link>
               </p>

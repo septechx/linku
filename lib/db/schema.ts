@@ -1,19 +1,12 @@
 import { relations } from "drizzle-orm";
-import {
-  sqliteTable,
-  text,
-  integer,
-  uniqueIndex,
-} from "drizzle-orm/sqlite-core";
+import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
   id: text("id")
     .$defaultFn(() => crypto.randomUUID())
     .primaryKey(),
   email: text("email").notNull().unique(),
-  emailVerified: integer("email_verified", { mode: "boolean" })
-    .notNull()
-    .default(false),
+  emailVerified: integer("email_verified", { mode: "boolean" }).notNull().default(false),
   name: text("name"),
   image: text("image"),
   createdAt: integer("created_at", { mode: "timestamp" })
@@ -164,10 +157,7 @@ export const link = sqliteTable(
       .$onUpdateFn(() => new Date()),
   },
   (table) => ({
-    orgSlugIdx: uniqueIndex("link_org_slug_idx").on(
-      table.organizationId,
-      table.slug,
-    ),
+    orgSlugIdx: uniqueIndex("link_org_slug_idx").on(table.organizationId, table.slug),
   }),
 );
 
@@ -196,19 +186,16 @@ export const organizationRelations = relations(organization, ({ many }) => ({
   links: many(link),
 }));
 
-export const organizationMemberRelations = relations(
-  organizationMember,
-  ({ one }) => ({
-    organization: one(organization, {
-      fields: [organizationMember.organizationId],
-      references: [organization.id],
-    }),
-    user: one(user, {
-      fields: [organizationMember.userId],
-      references: [user.id],
-    }),
+export const organizationMemberRelations = relations(organizationMember, ({ one }) => ({
+  organization: one(organization, {
+    fields: [organizationMember.organizationId],
+    references: [organization.id],
   }),
-);
+  user: one(user, {
+    fields: [organizationMember.userId],
+    references: [user.id],
+  }),
+}));
 
 export const linkRelations = relations(link, ({ one }) => ({
   organization: one(organization, {

@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Playfair_Display, Lora } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,12 @@ export const metadata: Metadata = {
   description: "A refined bookmark management experience",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#d4af37",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -26,9 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${playfair.variable} ${lora.variable} antialiased`}>
-        {children}
-      </body>
+      <body className={`${playfair.variable} ${lora.variable} antialiased`}>{children}</body>
     </html>
   );
 }

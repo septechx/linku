@@ -14,15 +14,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Copy,
-  ExternalLink,
-  Pencil,
-  Trash2,
-  Plus,
-  Link2,
-  ArrowLeft,
-} from "lucide-react";
+import { Copy, ExternalLink, Pencil, Trash2, Plus, Link2, ArrowLeft } from "lucide-react";
+import { copyToClipboard, getShortUrl, formatDate } from "@/lib/links";
 
 interface LinkItem {
   id: string;
@@ -122,9 +115,7 @@ export default function LinksPage() {
       setShowCreateForm(false);
       fetchLinks();
     } catch (err) {
-      setCreateError(
-        err instanceof Error ? err.message : "Failed to create link",
-      );
+      setCreateError(err instanceof Error ? err.message : "Failed to create link");
     } finally {
       setCreateLoading(false);
     }
@@ -158,9 +149,7 @@ export default function LinksPage() {
       setEditingLink(null);
       fetchLinks();
     } catch (err) {
-      setEditError(
-        err instanceof Error ? err.message : "Failed to update link",
-      );
+      setEditError(err instanceof Error ? err.message : "Failed to update link");
     } finally {
       setEditLoading(false);
     }
@@ -199,51 +188,34 @@ export default function LinksPage() {
     setEditError(null);
   }
 
-  function getShortUrl(linkItem: LinkItem) {
-    return `${appUrl}/l/${orgSlug}/${linkItem.slug}`;
+  function getShortUrlLocal(linkItem: LinkItem) {
+    return getShortUrl(appUrl, orgSlug, linkItem.slug);
   }
 
-  async function copyToClipboard(linkItem: LinkItem) {
-    const shortUrl = getShortUrl(linkItem);
-    try {
-      await navigator.clipboard.writeText(shortUrl);
+  async function handleCopy(linkItem: LinkItem) {
+    const shortUrl = getShortUrlLocal(linkItem);
+    await copyToClipboard(shortUrl, () => {
       setCopiedId(linkItem.id);
       setTimeout(() => setCopiedId(null), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = shortUrl;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      setCopiedId(linkItem.id);
-      setTimeout(() => setCopiedId(null), 2000);
-    }
-  }
-
-  function formatDate(dateString: string | null) {
-    if (!dateString) return "Never";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
     });
+  }
+
+  function handleFormatDate(dateString: string | null) {
+    return formatDate(dateString, "full");
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="font-body text-muted-foreground">
-          Loading collection...
-        </div>
+        <div className="font-body text-muted-foreground">Loading collection...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-6">
-        <p className="font-body text-[#b54a4a]">{error}</p>
+      <div className="border-l-2 border-destructive bg-destructive/5 p-6">
+        <p className="font-body text-destructive">{error}</p>
       </div>
     );
   }
@@ -251,12 +223,12 @@ export default function LinksPage() {
   return (
     <div className="space-y-10">
       {/* Header */}
-      <div className="border-b border-[#e8e6df] pb-6">
+      <div className="border-b border-border pb-6">
         <Button
           variant="ghost"
           size="sm"
           asChild
-          className="mb-4 font-body text-muted-foreground hover:text-[#d4af37] -ml-4"
+          className="mb-4 font-body text-muted-foreground hover:bg-secondary hover:text-foreground -ml-4"
         >
           <Link href={`/dashboard/orgs/${orgSlug}`}>
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -267,19 +239,17 @@ export default function LinksPage() {
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="h-px w-6 bg-[#d4af37]"></div>
-              <span className="font-body text-xs tracking-[0.2em] uppercase text-[#d4af37]">
+              <div className="h-px w-6 bg-accent"></div>
+              <span className="font-body text-xs tracking-[0.2em] uppercase text-accent">
                 Curated Links
               </span>
             </div>
-            <h1 className="font-serif text-3xl text-[#1a1a1a]">Links</h1>
-            <p className="mt-2 font-body text-muted-foreground">
-              Manage your curated short links
-            </p>
+            <h1 className="font-serif text-3xl text-foreground">Links</h1>
+            <p className="mt-2 font-body text-muted-foreground">Manage your curated short links</p>
           </div>
           <Button
             onClick={() => setShowCreateForm(!showCreateForm)}
-            className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] border-0 rounded-none"
+            className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover border-0 rounded-none"
           >
             <Plus className="mr-2 h-4 w-4" />
             {showCreateForm ? "Cancel" : "New Link"}
@@ -289,9 +259,9 @@ export default function LinksPage() {
 
       {/* Create Form */}
       {showCreateForm && (
-        <div className="border border-[#e8e6df] bg-white p-8">
+        <div className="border border-border bg-white p-8">
           <div className="flex items-center gap-2 mb-6">
-            <div className="h-px w-4 bg-[#d4af37]"></div>
+            <div className="h-px w-4 bg-accent"></div>
             <span className="font-body text-xs tracking-[0.2em] uppercase text-muted-foreground">
               New Entry
             </span>
@@ -299,10 +269,8 @@ export default function LinksPage() {
 
           <form onSubmit={handleCreate} className="space-y-6">
             {createError && (
-              <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-4">
-                <p className="font-body text-sm text-[#b54a4a]">
-                  {createError}
-                </p>
+              <div className="border-l-2 border-destructive bg-destructive/5 p-4">
+                <p className="font-body text-sm text-destructive">{createError}</p>
               </div>
             )}
             <div className="grid gap-6 md:grid-cols-2">
@@ -311,7 +279,7 @@ export default function LinksPage() {
                   htmlFor="slug"
                   className="font-body text-xs tracking-wider uppercase text-muted-foreground"
                 >
-                  Slug <span className="text-[#b54a4a]">*</span>
+                  Slug <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="slug"
@@ -321,18 +289,16 @@ export default function LinksPage() {
                   required
                   pattern="^[a-zA-Z0-9-_]+$"
                   title="Only letters, numbers, hyphens, and underscores allowed"
-                  className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                  className="font-body border-border rounded-none focus:border-accent"
                 />
-                <p className="font-body text-xs text-muted-foreground">
-                  URL-safe identifier
-                </p>
+                <p className="font-body text-xs text-muted-foreground">URL-safe identifier</p>
               </div>
               <div className="space-y-2">
                 <Label
                   htmlFor="destinationUrl"
                   className="font-body text-xs tracking-wider uppercase text-muted-foreground"
                 >
-                  Destination URL <span className="text-[#b54a4a]">*</span>
+                  Destination URL <span className="text-destructive">*</span>
                 </Label>
                 <Input
                   id="destinationUrl"
@@ -341,7 +307,7 @@ export default function LinksPage() {
                   value={newDestinationUrl}
                   onChange={(e) => setNewDestinationUrl(e.target.value)}
                   required
-                  className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                  className="font-body border-border rounded-none focus:border-accent"
                 />
               </div>
             </div>
@@ -351,15 +317,14 @@ export default function LinksPage() {
                   htmlFor="title"
                   className="font-body text-xs tracking-wider uppercase text-muted-foreground"
                 >
-                  Title{" "}
-                  <span className="text-muted-foreground/60">(optional)</span>
+                  Title <span className="text-muted-foreground/60">(optional)</span>
                 </Label>
                 <Input
                   id="title"
                   placeholder="A Descriptive Title"
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
-                  className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                  className="font-body border-border rounded-none focus:border-accent"
                 />
               </div>
               <div className="space-y-2">
@@ -367,23 +332,22 @@ export default function LinksPage() {
                   htmlFor="description"
                   className="font-body text-xs tracking-wider uppercase text-muted-foreground"
                 >
-                  Description{" "}
-                  <span className="text-muted-foreground/60">(optional)</span>
+                  Description <span className="text-muted-foreground/60">(optional)</span>
                 </Label>
                 <Input
                   id="description"
                   placeholder="Brief description of this link"
                   value={newDescription}
                   onChange={(e) => setNewDescription(e.target.value)}
-                  className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                  className="font-body border-border rounded-none focus:border-accent"
                 />
               </div>
             </div>
-            <div className="flex gap-3 pt-4 border-t border-[#e8e6df]">
+            <div className="flex gap-3 pt-4 border-t border-border">
               <Button
                 type="submit"
                 disabled={createLoading}
-                className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] rounded-none"
+                className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover rounded-none"
               >
                 {createLoading ? "Creating..." : "Create Link"}
               </Button>
@@ -391,7 +355,7 @@ export default function LinksPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setShowCreateForm(false)}
-                className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+                className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
               >
                 Cancel
               </Button>
@@ -402,16 +366,14 @@ export default function LinksPage() {
 
       {/* Empty State */}
       {links.length === 0 ? (
-        <div className="border border-[#e8e6df] bg-white p-12 text-center">
-          <Link2 className="h-12 w-12 text-[#d4af37] mx-auto mb-6" />
-          <h3 className="font-serif text-xl text-[#1a1a1a]">
-            No links curated yet
-          </h3>
+        <div className="border border-border bg-white p-12 text-center">
+          <Link2 className="h-12 w-12 text-accent mx-auto mb-6" />
+          <h3 className="font-serif text-xl text-foreground">No links curated yet</h3>
           <p className="mt-3 font-body text-muted-foreground max-w-md mx-auto">
             Begin your collection by creating your first curated short link.
           </p>
           <Button
-            className="mt-6 font-body tracking-wider uppercase bg-[#d4af37] text-[#1a1a1a] hover:bg-[#c9b037] border-0 rounded-none"
+            className="mt-6 font-body tracking-wider uppercase bg-accent text-foreground hover:bg-gold-dark border-0 rounded-none"
             onClick={() => setShowCreateForm(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -424,13 +386,13 @@ export default function LinksPage() {
           {links.map((linkItem) => (
             <article
               key={linkItem.id}
-              className="group border border-[#e8e6df] bg-white p-6 hover:border-[#d4af37] hover:shadow-sm transition-luxury"
+              className="group border border-border bg-white p-6 hover:border-accent hover:shadow-sm transition-luxury"
             >
               <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2">
-                    <h3 className="font-serif text-lg text-[#1a1a1a]">
+                    <h3 className="font-serif text-lg text-foreground">
                       {linkItem.title || linkItem.slug}
                     </h3>
                     <span className="font-body text-xs text-muted-foreground">
@@ -446,22 +408,20 @@ export default function LinksPage() {
 
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                     <Link
-                      href={getShortUrl(linkItem)}
+                      href={getShortUrlLocal(linkItem)}
                       target="_blank"
-                      className="font-body text-sm text-[#d4af37] hover-underline"
+                      className="font-body text-sm text-accent hover-underline"
                     >
-                      {getShortUrl(linkItem)}
+                      {getShortUrlLocal(linkItem)}
                     </Link>
-                    <span className="hidden sm:inline text-muted-foreground">
-                      →
-                    </span>
+                    <span className="hidden sm:inline text-muted-foreground">→</span>
                     <span className="font-body text-sm text-muted-foreground truncate max-w-md">
                       {linkItem.destinationUrl}
                     </span>
                   </div>
 
                   <p className="mt-3 font-body text-xs text-muted-foreground">
-                    Last accessed: {formatDate(linkItem.lastClickedAt)}
+                    Last accessed: {handleFormatDate(linkItem.lastClickedAt)}
                   </p>
                 </div>
 
@@ -470,8 +430,8 @@ export default function LinksPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(linkItem)}
-                    className="font-body text-xs tracking-wider uppercase border-[#e8e6df] hover:border-[#d4af37] hover:text-[#d4af37] rounded-none"
+                    onClick={() => handleCopy(linkItem)}
+                    className="font-body text-xs tracking-wider uppercase border-border hover:border-foreground hover:bg-secondary rounded-none"
                   >
                     <Copy className="mr-1 h-3 w-3" />
                     {copiedId === linkItem.id ? "Copied" : "Copy"}
@@ -480,7 +440,7 @@ export default function LinksPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => openEditDialog(linkItem)}
-                    className="border-[#e8e6df] hover:border-[#1a1a1a] rounded-none"
+                    className="border-border hover:border-foreground hover:bg-secondary rounded-none"
                   >
                     <Pencil className="h-3 w-3" />
                   </Button>
@@ -488,15 +448,15 @@ export default function LinksPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setDeletingLink(linkItem)}
-                    className="border-[#e8e6df] text-[#b54a4a] hover:border-[#b54a4a] hover:bg-[#b54a4a]/5 rounded-none"
+                    className="border-border text-destructive hover:border-destructive hover:bg-destructive/5 rounded-none"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
-                  <Link href={getShortUrl(linkItem)} target="_blank">
+                  <Link href={getShortUrlLocal(linkItem)} target="_blank">
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-[#e8e6df] hover:border-[#d4af37] hover:text-[#d4af37] rounded-none"
+                      className="border-border hover:border-foreground hover:bg-secondary rounded-none"
                     >
                       <ExternalLink className="h-3 w-3" />
                     </Button>
@@ -510,19 +470,17 @@ export default function LinksPage() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingLink} onOpenChange={() => setEditingLink(null)}>
-        <DialogContent className="bg-white border-[#e8e6df] rounded-none">
+        <DialogContent className="bg-white border-border rounded-none">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-[#1a1a1a]">
-              Edit Link
-            </DialogTitle>
+            <DialogTitle className="font-serif text-2xl text-foreground">Edit Link</DialogTitle>
             <DialogDescription className="font-body text-muted-foreground">
               Refine your curated link details
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-5 py-4">
             {editError && (
-              <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-4">
-                <p className="font-body text-sm text-[#b54a4a]">{editError}</p>
+              <div className="border-l-2 border-destructive bg-destructive/5 p-4">
+                <p className="font-body text-sm text-destructive">{editError}</p>
               </div>
             )}
             <div className="space-y-2">
@@ -538,7 +496,7 @@ export default function LinksPage() {
                 onChange={(e) => setEditSlug(e.target.value)}
                 required
                 pattern="^[a-zA-Z0-9-_]+$"
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <div className="space-y-2">
@@ -554,7 +512,7 @@ export default function LinksPage() {
                 value={editDestinationUrl}
                 onChange={(e) => setEditDestinationUrl(e.target.value)}
                 required
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <div className="space-y-2">
@@ -568,7 +526,7 @@ export default function LinksPage() {
                 id="edit-title"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <div className="space-y-2">
@@ -582,7 +540,7 @@ export default function LinksPage() {
                 id="edit-description"
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <DialogFooter className="gap-3">
@@ -590,14 +548,14 @@ export default function LinksPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setEditingLink(null)}
-                className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+                className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={editLoading}
-                className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] rounded-none"
+                className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover rounded-none"
               >
                 {editLoading ? "Saving..." : "Save Changes"}
               </Button>
@@ -608,24 +566,22 @@ export default function LinksPage() {
 
       {/* Delete Dialog */}
       <Dialog open={!!deletingLink} onOpenChange={() => setDeletingLink(null)}>
-        <DialogContent className="bg-white border-[#e8e6df] rounded-none">
+        <DialogContent className="bg-white border-border rounded-none">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-[#1a1a1a]">
-              Remove Link
-            </DialogTitle>
+            <DialogTitle className="font-serif text-2xl text-foreground">Remove Link</DialogTitle>
             <DialogDescription className="font-body text-muted-foreground">
-              Are you certain you wish to remove this link from your collection?
-              This action cannot be undone.
+              Are you certain you wish to remove this link from your collection? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             {deletingLink && (
-              <div className="border border-[#e8e6df] bg-[#faf9f6] p-4">
-                <p className="font-serif text-[#1a1a1a]">
+              <div className="border border-border bg-background p-4">
+                <p className="font-serif text-foreground">
                   {deletingLink.title || deletingLink.slug}
                 </p>
                 <p className="font-body text-sm text-muted-foreground mt-1">
-                  {getShortUrl(deletingLink)}
+                  {getShortUrlLocal(deletingLink)}
                 </p>
               </div>
             )}
@@ -635,7 +591,7 @@ export default function LinksPage() {
               type="button"
               variant="outline"
               onClick={() => setDeletingLink(null)}
-              className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+              className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
             >
               Cancel
             </Button>
@@ -644,7 +600,7 @@ export default function LinksPage() {
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteLoading}
-              className="font-body tracking-wider uppercase bg-[#b54a4a] text-white hover:bg-[#a04040] rounded-none"
+              className="font-body tracking-wider uppercase bg-destructive text-white hover:bg-destructive-hover rounded-none"
             >
               {deleteLoading ? "Removing..." : "Remove"}
             </Button>

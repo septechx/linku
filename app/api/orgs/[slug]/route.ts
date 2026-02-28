@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { organization, organizationMember } from "@/lib/db/schema";
-import { eq, and } from "drizzle-orm";
+import { organization } from "@/lib/db/schema";
+import { eq } from "drizzle-orm";
 
 // GET /api/orgs/[slug] - Get organization details
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   const session = await auth.api.getSession({
     headers: request.headers,
   });
@@ -41,10 +38,7 @@ export async function GET(
     });
 
     if (!org) {
-      return NextResponse.json(
-        { error: "Organization not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
     // Check if user is a member
@@ -64,10 +58,7 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error fetching organization:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch organization" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch organization" }, { status: 500 });
   }
 }
 
@@ -100,10 +91,7 @@ export async function PATCH(
     });
 
     if (!org) {
-      return NextResponse.json(
-        { error: "Organization not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
     const membership = org.members.find((m) => m.userId === userId);
@@ -123,15 +111,14 @@ export async function PATCH(
     }
 
     // Update organization
-    const [updatedOrg] = await db
+    await db
       .update(organization)
       .set({
         name: name || org.name,
         description: description !== undefined ? description : org.description,
         updatedAt: new Date(),
       })
-      .where(eq(organization.id, org.id))
-      .returning();
+      .where(eq(organization.id, org.id));
 
     // Fetch updated organization with members
     const result = await db.query.organization.findFirst({
@@ -160,10 +147,7 @@ export async function PATCH(
     });
   } catch (error) {
     console.error("Error updating organization:", error);
-    return NextResponse.json(
-      { error: "Failed to update organization" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to update organization" }, { status: 500 });
   }
 }
 
@@ -193,10 +177,7 @@ export async function DELETE(
     });
 
     if (!org) {
-      return NextResponse.json(
-        { error: "Organization not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
     const membership = org.members.find((m) => m.userId === userId);
@@ -221,9 +202,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting organization:", error);
-    return NextResponse.json(
-      { error: "Failed to delete organization" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to delete organization" }, { status: 500 });
   }
 }

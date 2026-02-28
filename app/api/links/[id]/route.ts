@@ -28,15 +28,10 @@ async function checkAdminPermission(userId: string, organizationId: string) {
     ),
   });
 
-  return (
-    membership && (membership.role === "owner" || membership.role === "admin")
-  );
+  return membership && (membership.role === "owner" || membership.role === "admin");
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -69,26 +64,17 @@ export async function GET(
     });
 
     if (!membership) {
-      return NextResponse.json(
-        { error: "You don't have access to this link" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: "You don't have access to this link" }, { status: 403 });
     }
 
     return NextResponse.json({ link: existingLink });
   } catch (error) {
     console.error("Error fetching link:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch link" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch link" }, { status: 500 });
   }
 }
 
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -110,10 +96,7 @@ export async function PATCH(
     }
 
     // Check if user has admin/owner permissions
-    const hasPermission = await checkAdminPermission(
-      session.user.id,
-      existingLink.organizationId,
-    );
+    const hasPermission = await checkAdminPermission(session.user.id, existingLink.organizationId);
 
     if (!hasPermission) {
       return NextResponse.json(
@@ -173,10 +156,7 @@ export async function PATCH(
     return NextResponse.json({ link: updatedLink[0] });
   } catch (error) {
     console.error("Error updating link:", error);
-    return NextResponse.json(
-      { error: "Failed to update link" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to update link" }, { status: 500 });
   }
 }
 
@@ -205,10 +185,7 @@ export async function DELETE(
     }
 
     // Check if user has admin/owner permissions
-    const hasPermission = await checkAdminPermission(
-      session.user.id,
-      existingLink.organizationId,
-    );
+    const hasPermission = await checkAdminPermission(session.user.id, existingLink.organizationId);
 
     if (!hasPermission) {
       return NextResponse.json(
@@ -223,9 +200,6 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting link:", error);
-    return NextResponse.json(
-      { error: "Failed to delete link" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to delete link" }, { status: 500 });
   }
 }

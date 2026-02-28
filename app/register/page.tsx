@@ -95,9 +95,7 @@ export default function RegisterPage() {
               <span className="font-body text-xs tracking-[0.2em] uppercase text-gold">
                 Membership
               </span>
-              <h2 className="mt-3 font-serif text-2xl text-foreground">
-                Join the Collection
-              </h2>
+              <h2 className="mt-3 font-serif text-2xl text-foreground">Join the Collection</h2>
               <p className="mt-2 font-body text-sm text-muted-foreground">
                 Create your account to begin curating links
               </p>
@@ -189,9 +187,7 @@ export default function RegisterPage() {
             {/* Divider */}
             <div className="flex items-center gap-4 my-8">
               <div className="h-px flex-1 bg-border"></div>
-              <span className="font-body text-xs text-muted-foreground">
-                or
-              </span>
+              <span className="font-body text-xs text-muted-foreground">or</span>
               <div className="h-px flex-1 bg-border"></div>
             </div>
 
@@ -199,10 +195,7 @@ export default function RegisterPage() {
             <div className="text-center">
               <p className="font-body text-sm text-muted-foreground">
                 Already a member?{" "}
-                <Link
-                  href="/login"
-                  className="text-gold hover:underline transition-all"
-                >
+                <Link href="/login" className="text-gold hover:underline transition-all">
                   Sign in
                 </Link>
               </p>

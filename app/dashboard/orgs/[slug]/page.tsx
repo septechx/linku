@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,12 +23,10 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {
   ArrowLeft,
-  Building2,
   Link2,
   MoreVertical,
   Pencil,
   Trash2,
-  Users,
   Loader2,
   Crown,
   Shield,
@@ -57,11 +56,7 @@ interface Organization {
   members: Member[];
 }
 
-export default function OrganizationPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default function OrganizationPage({ params }: { params: Promise<{ slug: string }> }) {
   const router = useRouter();
   const [org, setOrg] = useState<Organization | null>(null);
   const [loading, setLoading] = useState(true);
@@ -75,36 +70,39 @@ export default function OrganizationPage({
   });
   const [error, setError] = useState<string | null>(null);
 
+  const fetchOrganization = useCallback(
+    async (slug: string) => {
+      try {
+        const response = await fetch(`/api/orgs/${slug}`);
+        if (!response.ok) {
+          if (response.status === 404) {
+            router.push("/dashboard/orgs");
+            return;
+          }
+          throw new Error("Failed to fetch organization");
+        }
+        const data = await response.json();
+        setOrg(data.organization);
+        setFormData({
+          name: data.organization.name,
+          description: data.organization.description || "",
+        });
+      } catch (err) {
+        console.error("Error fetching organization:", err);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [router],
+  );
+
   useEffect(() => {
     const loadOrg = async () => {
       const { slug } = await params;
       fetchOrganization(slug);
     };
     loadOrg();
-  }, [params]);
-
-  const fetchOrganization = async (slug: string) => {
-    try {
-      const response = await fetch(`/api/orgs/${slug}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          router.push("/dashboard/orgs");
-          return;
-        }
-        throw new Error("Failed to fetch organization");
-      }
-      const data = await response.json();
-      setOrg(data.organization);
-      setFormData({
-        name: data.organization.name,
-        description: data.organization.description || "",
-      });
-    } catch (err) {
-      console.error("Error fetching organization:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  }, [params, fetchOrganization]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,9 +127,7 @@ export default function OrganizationPage({
       setOrg(data.organization);
       setEditDialogOpen(false);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to update organization",
-      );
+      setError(err instanceof Error ? err.message : "Failed to update organization");
     } finally {
       setUpdating(false);
     }
@@ -155,9 +151,7 @@ export default function OrganizationPage({
 
       router.push("/dashboard/orgs");
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete organization",
-      );
+      setError(err instanceof Error ? err.message : "Failed to delete organization");
       setDeleting(false);
     }
   };
@@ -165,9 +159,9 @@ export default function OrganizationPage({
   const getRoleIcon = (role: string) => {
     switch (role) {
       case "owner":
-        return <Crown className="h-4 w-4 text-[#d4af37]" />;
+        return <Crown className="h-4 w-4 text-accent" />;
       case "admin":
-        return <Shield className="h-4 w-4 text-[#1a1a1a]" />;
+        return <Shield className="h-4 w-4 text-foreground" />;
       default:
         return <User className="h-4 w-4 text-muted-foreground" />;
     }
@@ -176,7 +170,7 @@ export default function OrganizationPage({
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
+        <Loader2 className="h-8 w-8 animate-spin text-accent" />
       </div>
     );
   }
@@ -187,7 +181,7 @@ export default function OrganizationPage({
         <p className="font-body text-muted-foreground">Collection not found</p>
         <Button
           asChild
-          className="mt-4 font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] rounded-none"
+          className="mt-4 font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover rounded-none"
         >
           <Link href="/dashboard/orgs">Return to Collections</Link>
         </Button>
@@ -201,12 +195,12 @@ export default function OrganizationPage({
   return (
     <div className="space-y-10">
       {/* Breadcrumb & Header */}
-      <div className="border-b border-[#e8e6df] pb-6">
+      <div className="border-b border-border pb-6">
         <Button
           variant="ghost"
           size="sm"
           asChild
-          className="mb-4 font-body text-muted-foreground hover:text-[#d4af37] -ml-4"
+          className="mb-4 font-body text-muted-foreground hover:bg-secondary hover:text-foreground -ml-4"
         >
           <Link href="/dashboard/orgs">
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -217,12 +211,12 @@ export default function OrganizationPage({
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="h-px w-6 bg-[#d4af37]"></div>
-              <span className="font-body text-xs tracking-[0.2em] uppercase text-[#d4af37]">
+              <div className="h-px w-6 bg-accent"></div>
+              <span className="font-body text-xs tracking-[0.2em] uppercase text-accent">
                 Collection
               </span>
             </div>
-            <h1 className="font-serif text-3xl text-[#1a1a1a]">{org.name}</h1>
+            <h1 className="font-serif text-3xl text-foreground">{org.name}</h1>
             <p className="mt-2 font-body text-muted-foreground">/{org.slug}</p>
           </div>
           {canEdit && (
@@ -231,18 +225,15 @@ export default function OrganizationPage({
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="text-[#1a1a1a] hover:text-[#d4af37]"
+                  className="text-foreground hover:bg-secondary hover:text-foreground"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="end"
-                className="bg-white border-[#e8e6df] rounded-none"
-              >
+              <DropdownMenuContent align="end" className="bg-white border-border rounded-none">
                 <DropdownMenuItem
                   onClick={() => setEditDialogOpen(true)}
-                  className="font-body text-[#1a1a1a] focus:bg-[#f5f5f0] focus:text-[#d4af37] cursor-pointer"
+                  className="font-body text-foreground focus:bg-secondary focus:text-accent cursor-pointer"
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   Edit Collection
@@ -250,7 +241,7 @@ export default function OrganizationPage({
                 {canDelete && (
                   <DropdownMenuItem
                     onClick={() => setDeleteDialogOpen(true)}
-                    className="font-body text-[#b54a4a] focus:bg-[#b54a4a]/5 focus:text-[#b54a4a] cursor-pointer"
+                    className="font-body text-destructive focus:bg-destructive/5 focus:text-destructive cursor-pointer"
                   >
                     <Trash2 className="mr-2 h-4 w-4" />
                     Delete
@@ -264,40 +255,36 @@ export default function OrganizationPage({
 
       {/* Description */}
       {org.description && (
-        <div className="border border-[#e8e6df] bg-white p-8">
+        <div className="border border-border bg-white p-8">
           <div className="flex items-center gap-2 mb-4">
-            <div className="h-px w-4 bg-[#d4af37]"></div>
+            <div className="h-px w-4 bg-accent"></div>
             <span className="font-body text-xs tracking-[0.2em] uppercase text-muted-foreground">
               About
             </span>
           </div>
-          <p className="font-body text-lg leading-relaxed text-[#1a1a1a]">
-            {org.description}
-          </p>
+          <p className="font-body text-lg leading-relaxed text-foreground">{org.description}</p>
         </div>
       )}
 
       {/* Quick Actions */}
       <div>
         <div className="flex items-center gap-2 mb-4">
-          <div className="h-px w-4 bg-[#d4af37]"></div>
+          <div className="h-px w-4 bg-accent"></div>
           <span className="font-body text-xs tracking-[0.2em] uppercase text-muted-foreground">
             Access
           </span>
         </div>
         <Link href={`/dashboard/orgs/${org.slug}/links`}>
-          <article className="group border border-[#e8e6df] bg-white p-6 hover:border-[#d4af37] hover:shadow-sm transition-luxury">
+          <article className="group border border-border bg-white p-6 hover:border-accent hover:shadow-sm transition-luxury">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center border border-[#e8e6df] group-hover:border-[#d4af37] transition-luxury">
-                <Link2 className="h-6 w-6 text-[#d4af37]" />
+              <div className="flex h-12 w-12 items-center justify-center border border-border group-hover:border-accent transition-luxury">
+                <Link2 className="h-6 w-6 text-accent" />
               </div>
               <div>
-                <h3 className="font-serif text-lg text-[#1a1a1a] group-hover:text-[#d4af37] transition-luxury">
+                <h3 className="font-serif text-lg text-foreground group-hover:text-accent transition-luxury">
                   Links
                 </h3>
-                <p className="font-body text-sm text-muted-foreground">
-                  Manage your curated links
-                </p>
+                <p className="font-body text-sm text-muted-foreground">Manage your curated links</p>
               </div>
             </div>
           </article>
@@ -308,7 +295,7 @@ export default function OrganizationPage({
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className="h-px w-4 bg-[#d4af37]"></div>
+            <div className="h-px w-4 bg-accent"></div>
             <span className="font-body text-xs tracking-[0.2em] uppercase text-muted-foreground">
               Contributors
             </span>
@@ -318,35 +305,34 @@ export default function OrganizationPage({
           </span>
         </div>
 
-        <div className="border border-[#e8e6df] bg-white">
+        <div className="border border-border bg-white">
           {org.members.map((member, index) => (
             <div
               key={member.id}
-              className={`flex items-center justify-between p-6 ${index !== org.members.length - 1 ? "border-b border-[#e8e6df]" : ""}`}
+              className={`flex items-center justify-between p-6 ${index !== org.members.length - 1 ? "border-b border-border" : ""}`}
             >
               <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center border border-[#e8e6df] bg-[#faf9f6]">
+                <div className="flex h-10 w-10 items-center justify-center border border-border bg-background">
                   {member.user.image ? (
-                    <img
+                    <Image
                       src={member.user.image}
                       alt={member.user.name || ""}
-                      className="h-10 w-10 object-cover"
+                      width={40}
+                      height={40}
+                      className="object-cover"
+                      unoptimized
                     />
                   ) : (
-                    <span className="font-serif text-lg text-[#1a1a1a]">
-                      {(member.user.name || member.user.email)
-                        .charAt(0)
-                        .toUpperCase()}
+                    <span className="font-serif text-lg text-foreground">
+                      {(member.user.name || member.user.email).charAt(0).toUpperCase()}
                     </span>
                   )}
                 </div>
                 <div>
-                  <p className="font-serif text-[#1a1a1a]">
+                  <p className="font-serif text-foreground">
                     {member.user.name || member.user.email}
                   </p>
-                  <p className="font-body text-sm text-muted-foreground">
-                    {member.user.email}
-                  </p>
+                  <p className="font-body text-sm text-muted-foreground">{member.user.email}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -354,10 +340,10 @@ export default function OrganizationPage({
                 <span
                   className={`text-xs font-body tracking-wider uppercase px-2 py-1 border ${
                     member.role === "owner"
-                      ? "border-[#d4af37] text-[#d4af37]"
+                      ? "border-accent text-accent"
                       : member.role === "admin"
-                        ? "border-[#1a1a1a] text-[#1a1a1a]"
-                        : "border-[#e8e6df] text-muted-foreground"
+                        ? "border-foreground text-foreground"
+                        : "border-border text-muted-foreground"
                   }`}
                 >
                   {member.role}
@@ -370,10 +356,10 @@ export default function OrganizationPage({
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="bg-white border-[#e8e6df] rounded-none">
+        <DialogContent className="bg-white border-border rounded-none">
           <form onSubmit={handleUpdate}>
             <DialogHeader>
-              <DialogTitle className="font-serif text-2xl text-[#1a1a1a]">
+              <DialogTitle className="font-serif text-2xl text-foreground">
                 Edit Collection
               </DialogTitle>
               <DialogDescription className="font-body text-muted-foreground">
@@ -382,8 +368,8 @@ export default function OrganizationPage({
             </DialogHeader>
             <div className="space-y-5 py-6">
               {error && (
-                <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-4">
-                  <p className="font-body text-sm text-[#b54a4a]">{error}</p>
+                <div className="border-l-2 border-destructive bg-destructive/5 p-4">
+                  <p className="font-body text-sm text-destructive">{error}</p>
                 </div>
               )}
               <div className="space-y-2">
@@ -396,11 +382,9 @@ export default function OrganizationPage({
                 <Input
                   id="edit-name"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
-                  className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                  className="font-body border-border rounded-none focus:border-accent"
                 />
               </div>
               <div className="space-y-2">
@@ -413,11 +397,9 @@ export default function OrganizationPage({
                 <Input
                   id="edit-description"
                   value={formData.description}
-                  onChange={(e) =>
-                    setFormData({ ...formData, description: e.target.value })
-                  }
+                  onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder="A brief description"
-                  className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                  className="font-body border-border rounded-none focus:border-accent"
                 />
               </div>
             </div>
@@ -427,14 +409,14 @@ export default function OrganizationPage({
                 variant="outline"
                 onClick={() => setEditDialogOpen(false)}
                 disabled={updating}
-                className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+                className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={updating}
-                className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] rounded-none"
+                className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover rounded-none"
               >
                 {updating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Save Changes
@@ -446,21 +428,20 @@ export default function OrganizationPage({
 
       {/* Delete Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="bg-white border-[#e8e6df] rounded-none">
+        <DialogContent className="bg-white border-border rounded-none">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-[#1a1a1a]">
+            <DialogTitle className="font-serif text-2xl text-foreground">
               Delete Collection
             </DialogTitle>
             <DialogDescription className="font-body text-muted-foreground">
               Are you certain you wish to delete{" "}
-              <strong className="text-[#1a1a1a]">{org.name}</strong>? This
-              action cannot be undone. All associated data will be permanently
-              removed.
+              <strong className="text-foreground">{org.name}</strong>? This action cannot be undone.
+              All associated data will be permanently removed.
             </DialogDescription>
           </DialogHeader>
           {error && (
-            <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-4 my-4">
-              <p className="font-body text-sm text-[#b54a4a]">{error}</p>
+            <div className="border-l-2 border-destructive bg-destructive/5 p-4 my-4">
+              <p className="font-body text-sm text-destructive">{error}</p>
             </div>
           )}
           <DialogFooter className="gap-3 mt-6">
@@ -469,7 +450,7 @@ export default function OrganizationPage({
               variant="outline"
               onClick={() => setDeleteDialogOpen(false)}
               disabled={deleting}
-              className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+              className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
             >
               Cancel
             </Button>
@@ -478,7 +459,7 @@ export default function OrganizationPage({
               variant="destructive"
               onClick={handleDelete}
               disabled={deleting}
-              className="font-body tracking-wider uppercase bg-[#b54a4a] text-white hover:bg-[#a04040] rounded-none"
+              className="font-body tracking-wider uppercase bg-destructive text-white hover:bg-destructive-hover rounded-none"
             >
               {deleting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Delete Collection

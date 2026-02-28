@@ -19,10 +19,7 @@ const createLinkSchema = z.object({
   description: z.string().optional(),
 });
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> },
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const session = await auth.api.getSession({
       headers: request.headers,
@@ -40,10 +37,7 @@ export async function GET(
     });
 
     if (!org) {
-      return NextResponse.json(
-        { error: "Organization not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
     // Check if user is a member
@@ -70,10 +64,7 @@ export async function GET(
     return NextResponse.json({ links });
   } catch (error) {
     console.error("Error fetching links:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch links" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch links" }, { status: 500 });
   }
 }
 
@@ -98,10 +89,7 @@ export async function POST(
     });
 
     if (!org) {
-      return NextResponse.json(
-        { error: "Organization not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Organization not found" }, { status: 404 });
     }
 
     // Check if user is a member
@@ -158,9 +146,6 @@ export async function POST(
     return NextResponse.json({ link: newLink[0] }, { status: 201 });
   } catch (error) {
     console.error("Error creating link:", error);
-    return NextResponse.json(
-      { error: "Failed to create link" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to create link" }, { status: 500 });
   }
 }

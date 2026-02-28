@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { organization, organizationMember } from "@/lib/db/schema";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 
 // GET /api/orgs - List organizations for current user
 export async function GET(request: NextRequest) {
@@ -43,10 +43,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ organizations });
   } catch (error) {
     console.error("Error fetching organizations:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch organizations" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch organizations" }, { status: 500 });
   }
 }
 
@@ -67,10 +64,7 @@ export async function POST(request: NextRequest) {
     const { name, slug, description } = body;
 
     if (!name || !slug) {
-      return NextResponse.json(
-        { error: "Name and slug are required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Name and slug are required" }, { status: 400 });
     }
 
     // Validate slug format
@@ -78,8 +72,7 @@ export async function POST(request: NextRequest) {
     if (!slugRegex.test(slug)) {
       return NextResponse.json(
         {
-          error:
-            "Slug can only contain lowercase letters, numbers, and hyphens",
+          error: "Slug can only contain lowercase letters, numbers, and hyphens",
         },
         { status: 400 },
       );
@@ -91,10 +84,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingOrg) {
-      return NextResponse.json(
-        { error: "Organization slug is already taken" },
-        { status: 409 },
-      );
+      return NextResponse.json({ error: "Organization slug is already taken" }, { status: 409 });
     }
 
     // Create organization and membership in a transaction
@@ -122,9 +112,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ organization: result }, { status: 201 });
   } catch (error) {
     console.error("Error creating organization:", error);
-    return NextResponse.json(
-      { error: "Failed to create organization" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to create organization" }, { status: 500 });
   }
 }

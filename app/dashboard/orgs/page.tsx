@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Plus, Users, Loader2, Crown } from "lucide-react";
+import { Building2, Plus, Users, Loader2 } from "lucide-react";
 
 interface Organization {
   id: string;
@@ -78,9 +78,7 @@ export default function OrganizationsPage() {
       setFormData({ name: "", slug: "", description: "" });
       router.push(`/dashboard/orgs/${organization.slug}`);
     } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to create organization",
-      );
+      setError(err instanceof Error ? err.message : "Failed to create organization");
     } finally {
       setCreating(false);
     }
@@ -96,30 +94,30 @@ export default function OrganizationsPage() {
   return (
     <div className="space-y-10">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-[#e8e6df] pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 border-b border-border pb-6">
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="h-px w-6 bg-[#d4af37]"></div>
-            <span className="font-body text-xs tracking-[0.2em] uppercase text-[#d4af37]">
+            <div className="h-px w-6 bg-accent"></div>
+            <span className="font-body text-xs tracking-[0.2em] uppercase text-accent">
               Collections
             </span>
           </div>
-          <h1 className="font-serif text-3xl text-[#1a1a1a]">Organizations</h1>
+          <h1 className="font-serif text-3xl text-foreground">Organizations</h1>
           <p className="mt-2 font-body text-muted-foreground">
             Manage your curated collections and memberships
           </p>
         </div>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] border-0 rounded-none">
+            <Button className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover border-0 rounded-none">
               <Plus className="mr-2 h-4 w-4" />
               New Collection
             </Button>
           </DialogTrigger>
-          <DialogContent className="bg-white border-[#e8e6df] rounded-none max-w-lg">
+          <DialogContent className="bg-white border-border rounded-none max-w-lg">
             <form onSubmit={handleCreate}>
               <DialogHeader>
-                <DialogTitle className="font-serif text-2xl text-[#1a1a1a]">
+                <DialogTitle className="font-serif text-2xl text-foreground">
                   Create Collection
                 </DialogTitle>
                 <DialogDescription className="font-body text-muted-foreground">
@@ -128,8 +126,8 @@ export default function OrganizationsPage() {
               </DialogHeader>
               <div className="space-y-5 py-6">
                 {error && (
-                  <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-4">
-                    <p className="font-body text-sm text-[#b54a4a]">{error}</p>
+                  <div className="border-l-2 border-destructive bg-destructive/5 p-4">
+                    <p className="font-body text-sm text-destructive">{error}</p>
                   </div>
                 )}
                 <div className="space-y-2">
@@ -152,7 +150,7 @@ export default function OrganizationsPage() {
                       });
                     }}
                     required
-                    className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                    className="font-body border-border rounded-none focus:border-accent"
                   />
                 </div>
                 <div className="space-y-2">
@@ -166,13 +164,11 @@ export default function OrganizationsPage() {
                     id="slug"
                     placeholder="curators-guild"
                     value={formData.slug}
-                    onChange={(e) =>
-                      setFormData({ ...formData, slug: e.target.value })
-                    }
+                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
                     required
                     pattern="[a-z0-9-]+"
                     title="Only lowercase letters, numbers, and hyphens"
-                    className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                    className="font-body border-border rounded-none focus:border-accent"
                   />
                   <p className="font-body text-xs text-muted-foreground">
                     /dashboard/orgs/{formData.slug || "your-slug"}
@@ -183,17 +179,14 @@ export default function OrganizationsPage() {
                     htmlFor="description"
                     className="font-body text-xs tracking-wider uppercase text-muted-foreground"
                   >
-                    Description{" "}
-                    <span className="text-muted-foreground/60">(optional)</span>
+                    Description <span className="text-muted-foreground/60">(optional)</span>
                   </Label>
                   <Input
                     id="description"
                     placeholder="A distinguished collection of digital artifacts"
                     value={formData.description}
-                    onChange={(e) =>
-                      setFormData({ ...formData, description: e.target.value })
-                    }
-                    className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    className="font-body border-border rounded-none focus:border-accent"
                   />
                 </div>
               </div>
@@ -203,18 +196,16 @@ export default function OrganizationsPage() {
                   variant="outline"
                   onClick={() => setDialogOpen(false)}
                   disabled={creating}
-                  className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+                  className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
                 >
                   Cancel
                 </Button>
                 <Button
                   type="submit"
                   disabled={creating}
-                  className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] rounded-none"
+                  className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover rounded-none"
                 >
-                  {creating && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                  {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Create
                 </Button>
               </DialogFooter>
@@ -225,19 +216,17 @@ export default function OrganizationsPage() {
 
       {loading ? (
         <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin text-[#d4af37]" />
+          <Loader2 className="h-8 w-8 animate-spin text-accent" />
         </div>
       ) : organizations.length === 0 ? (
-        <div className="border border-[#e8e6df] bg-white p-12 text-center">
-          <Building2 className="h-12 w-12 text-[#d4af37] mx-auto mb-6" />
-          <h3 className="font-serif text-xl text-[#1a1a1a]">
-            No collections yet
-          </h3>
+        <div className="border border-border bg-white p-12 text-center">
+          <Building2 className="h-12 w-12 text-accent mx-auto mb-6" />
+          <h3 className="font-serif text-xl text-foreground">No collections yet</h3>
           <p className="mt-3 font-body text-muted-foreground max-w-md mx-auto">
             Begin your curation journey by creating your first organization.
           </p>
           <Button
-            className="mt-6 font-body tracking-wider uppercase bg-[#d4af37] text-[#1a1a1a] hover:bg-[#c9b037] border-0 rounded-none"
+            className="mt-6 font-body tracking-wider uppercase bg-accent text-foreground hover:bg-gold-dark border-0 rounded-none"
             onClick={() => setDialogOpen(true)}
           >
             <Plus className="mr-2 h-4 w-4" />
@@ -248,28 +237,26 @@ export default function OrganizationsPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {organizations.map((org) => (
             <Link key={org.id} href={`/dashboard/orgs/${org.slug}`}>
-              <article className="group h-full border border-[#e8e6df] bg-white p-6 hover:border-[#d4af37] hover:shadow-sm transition-luxury">
+              <article className="group h-full border border-border bg-white p-6 hover:border-accent hover:shadow-sm transition-luxury">
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center border border-[#e8e6df] group-hover:border-[#d4af37] transition-luxury">
-                      <Building2 className="h-5 w-5 text-[#d4af37]" />
+                    <div className="flex h-10 w-10 items-center justify-center border border-border group-hover:border-accent transition-luxury">
+                      <Building2 className="h-5 w-5 text-accent" />
                     </div>
                     <div>
-                      <h3 className="font-serif text-lg text-[#1a1a1a] group-hover:text-[#d4af37] transition-luxury">
+                      <h3 className="font-serif text-lg text-foreground group-hover:text-accent transition-luxury">
                         {org.name}
                       </h3>
-                      <p className="font-body text-xs text-muted-foreground">
-                        /{org.slug}
-                      </p>
+                      <p className="font-body text-xs text-muted-foreground">/{org.slug}</p>
                     </div>
                   </div>
                   <span
                     className={`text-xs font-body tracking-wider uppercase px-2 py-1 border ${
                       org.role === "owner"
-                        ? "border-[#d4af37] text-[#d4af37]"
+                        ? "border-accent text-accent"
                         : org.role === "admin"
-                          ? "border-[#1a1a1a] text-[#1a1a1a]"
-                          : "border-[#e8e6df] text-muted-foreground"
+                          ? "border-foreground text-foreground"
+                          : "border-border text-muted-foreground"
                     }`}
                   >
                     {org.role}
@@ -280,7 +267,7 @@ export default function OrganizationsPage() {
                     {org.description}
                   </p>
                 )}
-                <div className="flex items-center gap-1 font-body text-xs text-muted-foreground pt-4 border-t border-[#e8e6df]">
+                <div className="flex items-center gap-1 font-body text-xs text-muted-foreground pt-4 border-t border-border">
                   <Users className="h-3 w-3" />
                   {org.memberCount} member{org.memberCount !== 1 ? "s" : ""}
                 </div>

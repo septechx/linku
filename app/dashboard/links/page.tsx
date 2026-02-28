@@ -13,16 +13,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Copy,
-  ExternalLink,
-  Pencil,
-  Trash2,
-  Plus,
-  Link2,
-  Building2,
-  Search,
-} from "lucide-react";
+import { Copy, ExternalLink, Pencil, Trash2, Plus, Link2, Building2, Search } from "lucide-react";
+import { copyToClipboard, getShortUrlFromLink, formatDate } from "@/lib/links";
 
 interface Organization {
   name: string;
@@ -137,9 +129,7 @@ export default function AllLinksPage() {
       setEditingLink(null);
       fetchLinks();
     } catch (err) {
-      setEditError(
-        err instanceof Error ? err.message : "Failed to update link",
-      );
+      setEditError(err instanceof Error ? err.message : "Failed to update link");
     } finally {
       setEditLoading(false);
     }
@@ -179,50 +169,33 @@ export default function AllLinksPage() {
   }
 
   function getShortUrl(linkItem: LinkItem) {
-    return `${appUrl}/l/${linkItem.organization.slug}/${linkItem.slug}`;
+    return getShortUrlFromLink(appUrl, linkItem);
   }
 
-  async function copyToClipboard(linkItem: LinkItem) {
+  async function handleCopy(linkItem: LinkItem) {
     const shortUrl = getShortUrl(linkItem);
-    try {
-      await navigator.clipboard.writeText(shortUrl);
+    await copyToClipboard(shortUrl, () => {
       setCopiedId(linkItem.id);
       setTimeout(() => setCopiedId(null), 2000);
-    } catch {
-      const textarea = document.createElement("textarea");
-      textarea.value = shortUrl;
-      document.body.appendChild(textarea);
-      textarea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textarea);
-      setCopiedId(linkItem.id);
-      setTimeout(() => setCopiedId(null), 2000);
-    }
+    });
   }
 
-  function formatDate(dateString: string | null) {
-    if (!dateString) return "Never";
-    return new Date(dateString).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
+  function handleFormatDate(dateString: string | null) {
+    return formatDate(dateString, "full");
   }
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="font-body text-muted-foreground">
-          Loading curated links...
-        </div>
+        <div className="font-body text-muted-foreground">Loading curated links...</div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-6">
-        <p className="font-body text-[#b54a4a]">{error}</p>
+      <div className="border-l-2 border-destructive bg-destructive/5 p-6">
+        <p className="font-body text-destructive">{error}</p>
       </div>
     );
   }
@@ -230,23 +203,23 @@ export default function AllLinksPage() {
   return (
     <div className="space-y-10">
       {/* Header */}
-      <div className="border-b border-[#e8e6df] pb-6">
+      <div className="border-b border-border pb-6">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <div className="h-px w-6 bg-[#d4af37]"></div>
-              <span className="font-body text-xs tracking-[0.2em] uppercase text-[#d4af37]">
+              <div className="h-px w-6 bg-accent"></div>
+              <span className="font-body text-xs tracking-[0.2em] uppercase text-accent">
                 Complete Collection
               </span>
             </div>
-            <h1 className="font-serif text-3xl text-[#1a1a1a]">All Links</h1>
+            <h1 className="font-serif text-3xl text-foreground">All Links</h1>
             <p className="mt-2 font-body text-muted-foreground">
               Every curated link across all your organizations
             </p>
           </div>
           <Button
             asChild
-            className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] border-0 rounded-none"
+            className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover border-0 rounded-none"
           >
             <Link href="/dashboard/orgs">
               <Plus className="mr-2 h-4 w-4" />
@@ -258,27 +231,25 @@ export default function AllLinksPage() {
 
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="border border-[#e8e6df] bg-white p-6">
+        <div className="border border-border bg-white p-6">
           <p className="font-body text-xs tracking-wider uppercase text-muted-foreground mb-2">
             Total Links
           </p>
-          <p className="font-serif text-3xl text-[#1a1a1a]">{links.length}</p>
+          <p className="font-serif text-3xl text-foreground">{links.length}</p>
         </div>
-        <div className="border border-[#e8e6df] bg-white p-6">
+        <div className="border border-border bg-white p-6">
           <p className="font-body text-xs tracking-wider uppercase text-muted-foreground mb-2">
             Total Clicks
           </p>
-          <p className="font-serif text-3xl text-[#1a1a1a]">
-            {links
-              .reduce((sum, link) => sum + link.clickCount, 0)
-              .toLocaleString()}
+          <p className="font-serif text-3xl text-foreground">
+            {links.reduce((sum, link) => sum + link.clickCount, 0).toLocaleString()}
           </p>
         </div>
-        <div className="border border-[#e8e6df] bg-white p-6">
+        <div className="border border-border bg-white p-6">
           <p className="font-body text-xs tracking-wider uppercase text-muted-foreground mb-2">
             Organizations
           </p>
-          <p className="font-serif text-3xl text-[#1a1a1a]">
+          <p className="font-serif text-3xl text-foreground">
             {new Set(links.map((l) => l.organizationId)).size}
           </p>
         </div>
@@ -292,24 +263,22 @@ export default function AllLinksPage() {
             placeholder="Search links by slug, title, description, or organization..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-11 font-body border-[#e8e6df] rounded-none focus:border-[#d4af37] h-12"
+            className="pl-11 font-body border-border rounded-none focus:border-accent h-12"
           />
         </div>
       )}
 
       {/* Empty State */}
       {links.length === 0 ? (
-        <div className="border border-[#e8e6df] bg-white p-12 text-center">
-          <Link2 className="h-12 w-12 text-[#d4af37] mx-auto mb-6" />
-          <h3 className="font-serif text-xl text-[#1a1a1a]">
-            No links curated yet
-          </h3>
+        <div className="border border-border bg-white p-12 text-center">
+          <Link2 className="h-12 w-12 text-accent mx-auto mb-6" />
+          <h3 className="font-serif text-xl text-foreground">No links curated yet</h3>
           <p className="mt-3 font-body text-muted-foreground max-w-md mx-auto">
-            You haven&apos;t created any links across your organizations. Visit
-            an organization to create your first curated link.
+            You haven&apos;t created any links across your organizations. Visit an organization to
+            create your first curated link.
           </p>
           <Button
-            className="mt-6 font-body tracking-wider uppercase bg-[#d4af37] text-[#1a1a1a] hover:bg-[#c9b037] border-0 rounded-none"
+            className="mt-6 font-body tracking-wider uppercase bg-accent text-foreground hover:bg-gold-dark border-0 rounded-none"
             asChild
           >
             <Link href="/dashboard/orgs">
@@ -319,17 +288,15 @@ export default function AllLinksPage() {
           </Button>
         </div>
       ) : filteredLinks.length === 0 ? (
-        <div className="border border-[#e8e6df] bg-white p-12 text-center">
-          <Search className="h-12 w-12 text-[#d4af37] mx-auto mb-6" />
-          <h3 className="font-serif text-xl text-[#1a1a1a]">
-            No matches found
-          </h3>
+        <div className="border border-border bg-white p-12 text-center">
+          <Search className="h-12 w-12 text-accent mx-auto mb-6" />
+          <h3 className="font-serif text-xl text-foreground">No matches found</h3>
           <p className="mt-3 font-body text-muted-foreground">
             No links match your search query. Try different keywords.
           </p>
           <Button
             variant="outline"
-            className="mt-6 font-body tracking-wider uppercase border-[#e8e6df] rounded-none"
+            className="mt-6 font-body tracking-wider uppercase border-border rounded-none"
             onClick={() => setSearchQuery("")}
           >
             Clear Search
@@ -341,13 +308,13 @@ export default function AllLinksPage() {
           {filteredLinks.map((linkItem) => (
             <article
               key={linkItem.id}
-              className="group border border-[#e8e6df] bg-white p-6 hover:border-[#d4af37] hover:shadow-sm transition-luxury"
+              className="group border border-border bg-white p-6 hover:border-accent hover:shadow-sm transition-luxury"
             >
               <div className="flex flex-col lg:flex-row lg:items-start gap-6">
                 {/* Content */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <h3 className="font-serif text-lg text-[#1a1a1a]">
+                    <h3 className="font-serif text-lg text-foreground">
                       {linkItem.title || linkItem.slug}
                     </h3>
                     <span className="font-body text-xs text-muted-foreground">
@@ -355,7 +322,7 @@ export default function AllLinksPage() {
                     </span>
                     <Link
                       href={`/dashboard/orgs/${linkItem.organization.slug}`}
-                      className="inline-flex items-center gap-1 px-2 py-1 bg-[#f5f5f0] text-[#1a1a1a] font-body text-xs tracking-wider uppercase hover:bg-[#d4af37] hover:text-[#1a1a1a] transition-luxury"
+                      className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-foreground font-body text-xs tracking-wider uppercase hover:bg-accent hover:text-foreground transition-luxury"
                     >
                       <Building2 className="h-3 w-3" />
                       {linkItem.organization.name}
@@ -372,20 +339,18 @@ export default function AllLinksPage() {
                     <Link
                       href={getShortUrl(linkItem)}
                       target="_blank"
-                      className="font-body text-sm text-[#d4af37] hover:underline"
+                      className="font-body text-sm text-accent hover:underline"
                     >
                       {getShortUrl(linkItem)}
                     </Link>
-                    <span className="hidden sm:inline text-muted-foreground">
-                      →
-                    </span>
+                    <span className="hidden sm:inline text-muted-foreground">→</span>
                     <span className="font-body text-sm text-muted-foreground truncate max-w-md">
                       {linkItem.destinationUrl}
                     </span>
                   </div>
 
                   <p className="mt-3 font-body text-xs text-muted-foreground">
-                    Last accessed: {formatDate(linkItem.lastClickedAt)}
+                    Last accessed: {handleFormatDate(linkItem.lastClickedAt)}
                   </p>
                 </div>
 
@@ -394,8 +359,8 @@ export default function AllLinksPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => copyToClipboard(linkItem)}
-                    className="font-body text-xs tracking-wider uppercase border-[#e8e6df] hover:border-[#d4af37] hover:text-[#d4af37] rounded-none"
+                    onClick={() => handleCopy(linkItem)}
+                    className="font-body text-xs tracking-wider uppercase border-border hover:border-foreground hover:bg-secondary rounded-none"
                   >
                     <Copy className="mr-1 h-3 w-3" />
                     {copiedId === linkItem.id ? "Copied" : "Copy"}
@@ -404,7 +369,7 @@ export default function AllLinksPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => openEditDialog(linkItem)}
-                    className="border-[#e8e6df] hover:border-[#1a1a1a] rounded-none"
+                    className="border-border hover:border-foreground hover:bg-secondary rounded-none"
                   >
                     <Pencil className="h-3 w-3" />
                   </Button>
@@ -412,7 +377,7 @@ export default function AllLinksPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setDeletingLink(linkItem)}
-                    className="border-[#e8e6df] text-[#b54a4a] hover:border-[#b54a4a] hover:bg-[#b54a4a]/5 rounded-none"
+                    className="border-border text-destructive hover:border-destructive hover:bg-destructive/5 rounded-none"
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
@@ -420,7 +385,7 @@ export default function AllLinksPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="border-[#e8e6df] hover:border-[#d4af37] hover:text-[#d4af37] rounded-none"
+                      className="border-border hover:border-foreground hover:bg-secondary rounded-none"
                     >
                       <ExternalLink className="h-3 w-3" />
                     </Button>
@@ -434,19 +399,17 @@ export default function AllLinksPage() {
 
       {/* Edit Dialog */}
       <Dialog open={!!editingLink} onOpenChange={() => setEditingLink(null)}>
-        <DialogContent className="bg-white border-[#e8e6df] rounded-none">
+        <DialogContent className="bg-white border-border rounded-none">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-[#1a1a1a]">
-              Edit Link
-            </DialogTitle>
+            <DialogTitle className="font-serif text-2xl text-foreground">Edit Link</DialogTitle>
             <DialogDescription className="font-body text-muted-foreground">
               Refine your curated link details
             </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleUpdate} className="space-y-5 py-4">
             {editError && (
-              <div className="border-l-2 border-[#b54a4a] bg-[#b54a4a]/5 p-4">
-                <p className="font-body text-sm text-[#b54a4a]">{editError}</p>
+              <div className="border-l-2 border-destructive bg-destructive/5 p-4">
+                <p className="font-body text-sm text-destructive">{editError}</p>
               </div>
             )}
             <div className="space-y-2">
@@ -462,7 +425,7 @@ export default function AllLinksPage() {
                 onChange={(e) => setEditSlug(e.target.value)}
                 required
                 pattern="^[a-zA-Z0-9-_]+$"
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <div className="space-y-2">
@@ -478,7 +441,7 @@ export default function AllLinksPage() {
                 value={editDestinationUrl}
                 onChange={(e) => setEditDestinationUrl(e.target.value)}
                 required
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <div className="space-y-2">
@@ -492,7 +455,7 @@ export default function AllLinksPage() {
                 id="edit-title"
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <div className="space-y-2">
@@ -506,7 +469,7 @@ export default function AllLinksPage() {
                 id="edit-description"
                 value={editDescription}
                 onChange={(e) => setEditDescription(e.target.value)}
-                className="font-body border-[#e8e6df] rounded-none focus:border-[#d4af37]"
+                className="font-body border-border rounded-none focus:border-accent"
               />
             </div>
             <DialogFooter className="gap-3">
@@ -514,14 +477,14 @@ export default function AllLinksPage() {
                 type="button"
                 variant="outline"
                 onClick={() => setEditingLink(null)}
-                className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+                className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={editLoading}
-                className="font-body tracking-wider uppercase bg-[#1a1a1a] text-[#faf9f6] hover:bg-[#333333] rounded-none"
+                className="font-body tracking-wider uppercase bg-primary text-primary-foreground hover:bg-primary-hover rounded-none"
               >
                 {editLoading ? "Saving..." : "Save Changes"}
               </Button>
@@ -532,20 +495,18 @@ export default function AllLinksPage() {
 
       {/* Delete Dialog */}
       <Dialog open={!!deletingLink} onOpenChange={() => setDeletingLink(null)}>
-        <DialogContent className="bg-white border-[#e8e6df] rounded-none">
+        <DialogContent className="bg-white border-border rounded-none">
           <DialogHeader>
-            <DialogTitle className="font-serif text-2xl text-[#1a1a1a]">
-              Remove Link
-            </DialogTitle>
+            <DialogTitle className="font-serif text-2xl text-foreground">Remove Link</DialogTitle>
             <DialogDescription className="font-body text-muted-foreground">
-              Are you certain you wish to remove this link from your collection?
-              This action cannot be undone.
+              Are you certain you wish to remove this link from your collection? This action cannot
+              be undone.
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
             {deletingLink && (
-              <div className="border border-[#e8e6df] bg-[#faf9f6] p-4">
-                <p className="font-serif text-[#1a1a1a]">
+              <div className="border border-border bg-background p-4">
+                <p className="font-serif text-foreground">
                   {deletingLink.title || deletingLink.slug}
                 </p>
                 <p className="font-body text-sm text-muted-foreground mt-1">
@@ -562,7 +523,7 @@ export default function AllLinksPage() {
               type="button"
               variant="outline"
               onClick={() => setDeletingLink(null)}
-              className="font-body tracking-wider uppercase border-[#e8e6df] text-[#1a1a1a] hover:bg-[#f5f5f0] rounded-none"
+              className="font-body tracking-wider uppercase border-border text-foreground hover:bg-secondary rounded-none"
             >
               Cancel
             </Button>
@@ -571,7 +532,7 @@ export default function AllLinksPage() {
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteLoading}
-              className="font-body tracking-wider uppercase bg-[#b54a4a] text-white hover:bg-[#a04040] rounded-none"
+              className="font-body tracking-wider uppercase bg-destructive text-white hover:bg-destructive-hover rounded-none"
             >
               {deleteLoading ? "Removing..." : "Remove"}
             </Button>

@@ -43,9 +43,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Create a map for quick lookup
-    const orgMap = new Map(
-      orgs.map((o) => [o.id, { name: o.name, slug: o.slug }]),
-    );
+    const orgMap = new Map(orgs.map((o) => [o.id, { name: o.name, slug: o.slug }]));
 
     // Get all links from those organizations
     const links = await db.query.link.findMany({
@@ -65,9 +63,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ links: enrichedLinks });
   } catch (error) {
     console.error("Error fetching all links:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch links" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch links" }, { status: 500 });
   }
 }
