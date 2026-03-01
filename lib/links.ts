@@ -11,6 +11,7 @@ export interface LinkItem {
   clickCount: number;
   lastClickedAt: string | null;
   createdAt: string;
+  isGlobal: boolean;
   organization?: {
     name: string;
     slug: string;
@@ -29,12 +30,25 @@ export function getShortUrl(baseUrl: string, orgSlug: string, linkSlug: string):
 }
 
 /**
+ * Generate a global short URL
+ * @param baseUrl - The base URL of the application
+ * @param slug - The link slug
+ * @returns The full global short URL
+ */
+export function getGlobalUrl(baseUrl: string, slug: string): string {
+  return `${baseUrl}/s/${slug}`;
+}
+
+/**
  * Generate a short URL for a link from a LinkItem object
  * @param baseUrl - The base URL of the application
  * @param linkItem - The link item with organization info
  * @returns The full short URL
  */
 export function getShortUrlFromLink(baseUrl: string, linkItem: LinkItem): string {
+  if (linkItem.isGlobal) {
+    return getGlobalUrl(baseUrl, linkItem.slug);
+  }
   const orgSlug = linkItem.organization?.slug || "";
   return `${baseUrl}/l/${orgSlug}/${linkItem.slug}`;
 }

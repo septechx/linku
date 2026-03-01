@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ interface LinkItem {
   clickCount: number;
   lastClickedAt: string | null;
   createdAt: string;
+  isGlobal: boolean;
 }
 
 export default function LinksPage() {
@@ -42,6 +44,7 @@ export default function LinksPage() {
   const [newDestinationUrl, setNewDestinationUrl] = useState("");
   const [newTitle, setNewTitle] = useState("");
   const [newDescription, setNewDescription] = useState("");
+  const [newIsGlobal, setNewIsGlobal] = useState(false);
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -99,6 +102,7 @@ export default function LinksPage() {
           destinationUrl: newDestinationUrl,
           title: newTitle || undefined,
           description: newDescription || undefined,
+          isGlobal: newIsGlobal,
         }),
       });
 
@@ -112,6 +116,7 @@ export default function LinksPage() {
       setNewDestinationUrl("");
       setNewTitle("");
       setNewDescription("");
+      setNewIsGlobal(false);
       setShowCreateForm(false);
       fetchLinks();
     } catch (err) {
@@ -189,6 +194,9 @@ export default function LinksPage() {
   }
 
   function getShortUrlLocal(linkItem: LinkItem) {
+    if (linkItem.isGlobal) {
+      return `${appUrl}/s/${linkItem.slug}`;
+    }
     return getShortUrl(appUrl, orgSlug, linkItem.slug);
   }
 
@@ -343,6 +351,28 @@ export default function LinksPage() {
                 />
               </div>
             </div>
+            <div className="grid gap-6 md:grid-cols-2">
+              <div className="flex items-start gap-3">
+                <Checkbox
+                  id="isGlobal"
+                  checked={newIsGlobal}
+                  onCheckedChange={(checked) => setNewIsGlobal(checked === true)}
+                  className="mt-0.5 rounded-none border-border data-[state=checked]:bg-accent data-[state=checked]:border-accent"
+                />
+                <div className="space-y-1">
+                  <Label
+                    htmlFor="isGlobal"
+                    className="font-body text-xs tracking-wider uppercase text-muted-foreground"
+                  >
+                    Global link
+                  </Label>
+                  <p className="font-body text-xs text-muted-foreground">
+                    Makes this link accessible at /s/[slug] instead of /l/[org]/[slug]. Global links
+                    are unique across all organizations.
+                  </p>
+                </div>
+              </div>
+            </div>
             <div className="flex gap-3 pt-4 border-t border-border">
               <Button
                 type="submit"
@@ -395,6 +425,11 @@ export default function LinksPage() {
                     <h3 className="font-serif text-lg text-foreground">
                       {linkItem.title || linkItem.slug}
                     </h3>
+                    {linkItem.isGlobal && (
+                      <span className="font-body text-xs px-2 py-0.5 bg-accent/10 text-accent">
+                        Global
+                      </span>
+                    )}
                     <span className="font-body text-xs text-muted-foreground">
                       {linkItem.clickCount} clicks
                     </span>

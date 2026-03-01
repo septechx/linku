@@ -87,29 +87,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Organization slug is already taken" }, { status: 409 });
     }
 
-    // Create organization and membership in a transaction
-    const result = await db.transaction(async (tx) => {
-      // Create the organization
-      const [newOrg] = await tx
-        .insert(organization)
-        .values({
-          name,
-          slug,
-          description: description || null,
-        })
-        .returning();
+    // Create organization first
+    const [newOrg] = await db
+      .insert(organization)
+      .values({
+        name,
+        slug,
+        description: description || null,
+      })
+      .returning();
 
-      // Add creator as owner
-      await tx.insert(organizationMember).values({
-        organizationId: newOrg.id,
-        userId,
-        role: "owner",
-      });
-
-      return newOrg;
+    // Add creator as owner
+    await db.insert(organizationMember).values({
+      organizationId: newOrg.id,
+      userId,
+      role: "owner",
     });
 
-    return NextResponse.json({ organization: result }, { status: 201 });
+    return NextResponse.json({ organization: newOrg }, { status: 201 });
   } catch (error) {
     console.error("Error creating organization:", error);
     return NextResponse.json({ error: "Failed to create organization" }, { status: 500 });

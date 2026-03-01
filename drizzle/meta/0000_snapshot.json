@@ -1,7 +1,7 @@
 {
   "version": "6",
   "dialect": "sqlite",
-  "id": "f6f43b56-c5f7-4aa2-8705-5aa7a7de7aa7",
+  "id": "2ff110c2-5b8d-41d4-b55d-5c5d19b04f78",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "tables": {
     "account": {
@@ -160,6 +160,25 @@
           "notNull": false,
           "autoincrement": false
         },
+        "is_global": {
+          "name": "is_global",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": false
+        },
+        "global_slug": {
+          "name": "global_slug",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "generated": {
+            "as": "(case when \"is_global\" = 1 then \"slug\" else null end)",
+            "type": "virtual"
+          }
+        },
         "click_count": {
           "name": "click_count",
           "type": "integer",
@@ -194,6 +213,11 @@
         "link_org_slug_idx": {
           "name": "link_org_slug_idx",
           "columns": ["organization_id", "slug"],
+          "isUnique": true
+        },
+        "link_global_slug_idx": {
+          "name": "link_global_slug_idx",
+          "columns": ["global_slug"],
           "isUnique": true
         }
       },

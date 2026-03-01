@@ -24,6 +24,7 @@ interface LinkItem {
   clickCount: number;
   lastClickedAt: string | null;
   createdAt: string;
+  isGlobal: boolean;
   organization: {
     name: string;
     slug: string;

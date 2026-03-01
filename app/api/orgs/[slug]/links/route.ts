@@ -17,6 +17,7 @@ const createLinkSchema = z.object({
   destinationUrl: z.string().url("Invalid URL"),
   title: z.string().max(255).optional(),
   description: z.string().optional(),
+  isGlobal: z.boolean().optional(),
 });
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
@@ -117,7 +118,7 @@ export async function POST(
       );
     }
 
-    const { slug: linkSlug, destinationUrl, title, description } = result.data;
+    const { slug: linkSlug, destinationUrl, title, description, isGlobal } = result.data;
 
     // Check if slug already exists in this organization
     const existingLink = await db.query.link.findFirst({
@@ -131,6 +132,20 @@ export async function POST(
       );
     }
 
+    // If global, check that the slug doesn't already exist in any global link
+    if (isGlobal) {
+      const existingGlobalLink = await db.query.link.findFirst({
+        where: eq(link.globalSlug, linkSlug),
+      });
+
+      if (existingGlobalLink) {
+        return NextResponse.json(
+          { error: "A global link with this slug already exists" },
+          { status: 409 },
+        );
+      }
+    }
+
     // Create the link
     const newLink = await db
       .insert(link)
@@ -140,6 +155,7 @@ export async function POST(
         destinationUrl,
         title: title || null,
         description: description || null,
+        isGlobal: isGlobal ?? false,
       })
       .returning();
 

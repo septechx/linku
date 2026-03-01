@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { sqliteTable, text, integer, uniqueIndex } from "drizzle-orm/sqlite-core";
 
 export const user = sqliteTable("user", {
@@ -146,6 +146,11 @@ export const link = sqliteTable(
     destinationUrl: text("destination_url").notNull(),
     title: text("title"),
     description: text("description"),
+    isGlobal: integer("is_global", { mode: "boolean" }).notNull().default(false),
+    globalSlug: text("global_slug").generatedAlwaysAs(
+      () => sql`case when "is_global" = 1 then "slug" else null end`,
+      { mode: "virtual" },
+    ),
     clickCount: integer("click_count").notNull().default(0),
     lastClickedAt: integer("last_clicked_at", { mode: "timestamp" }),
     createdAt: integer("created_at", { mode: "timestamp" })
@@ -158,6 +163,7 @@ export const link = sqliteTable(
   },
   (table) => ({
     orgSlugIdx: uniqueIndex("link_org_slug_idx").on(table.organizationId, table.slug),
+    globalSlugIdx: uniqueIndex("link_global_slug_idx").on(table.globalSlug),
   }),
 );
 

@@ -22,6 +22,8 @@ CREATE TABLE `link` (
 	`destination_url` text NOT NULL,
 	`title` text,
 	`description` text,
+	`is_global` integer DEFAULT false NOT NULL,
+	`global_slug` text GENERATED ALWAYS AS (case when "is_global" = 1 then "slug" else null end) VIRTUAL,
 	`click_count` integer DEFAULT 0 NOT NULL,
 	`last_clicked_at` integer,
 	`created_at` integer NOT NULL,
@@ -30,6 +32,7 @@ CREATE TABLE `link` (
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `link_org_slug_idx` ON `link` (`organization_id`,`slug`);--> statement-breakpoint
+CREATE UNIQUE INDEX `link_global_slug_idx` ON `link` (`global_slug`);--> statement-breakpoint
 CREATE TABLE `organization` (
 	`id` text PRIMARY KEY NOT NULL,
 	`name` text NOT NULL,

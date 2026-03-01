@@ -30,7 +30,7 @@ interface LinkItem {
   clickCount: number;
   lastClickedAt: string | null;
   createdAt: string;
-  organizationId: string;
+  isGlobal: boolean;
   organization: Organization;
 }
 
@@ -250,7 +250,7 @@ export default function AllLinksPage() {
             Organizations
           </p>
           <p className="font-serif text-3xl text-foreground">
-            {new Set(links.map((l) => l.organizationId)).size}
+            {new Set(links.map((l) => l.organization.slug)).size}
           </p>
         </div>
       </div>
