@@ -367,9 +367,7 @@ export default async function Home() {
 
           {/* Bottom bar */}
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 border-t border-border py-6">
-            <p className="font-body text-xs text-muted-foreground">
-              &copy; {new Date().getFullYear()} LINKU. All rights reserved.
-            </p>
+            <p className="font-body text-xs text-muted-foreground">&copy; 2026 LINKU.</p>
             <div className="flex items-center gap-2">
               <div className="h-px w-8 bg-accent"></div>
               <span className="font-serif text-lg text-accent">L</span>
