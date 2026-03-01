@@ -15,12 +15,16 @@ if (!existsSync(dbDir)) {
 
 const sqlite = new Database(dbPath);
 
-// Enable WAL mode for better concurrency
 sqlite.pragma("journal_mode = WAL");
+sqlite.pragma("foreign_keys = ON");
 
 export const db = drizzle(sqlite, { schema });
 
-// Run migrations on startup
-migrate(db, { migrationsFolder: "./drizzle" });
+const isBuildPhase =
+  process.env.NEXT_PHASE === "phase-production-build" ||
+  process.env.NEXT_PHASE === "phase-development-server";
+if (!isBuildPhase && !process.env.SKIP_DB_MIGRATIONS) {
+  migrate(db, { migrationsFolder: "./drizzle" });
+}
 
 export type Database = typeof db;
