@@ -5,6 +5,8 @@ import { link, organization, organizationMember } from "@/lib/db/schema";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 
+export const dynamic = "force-dynamic";
+
 const createLinkSchema = z.object({
   slug: z
     .string()

@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { organization, link } from "@/lib/db/schema";
 import { eq, and } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ orgSlug: string; linkSlug: string }> },

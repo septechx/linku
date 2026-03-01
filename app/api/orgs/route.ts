@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { organization, organizationMember } from "@/lib/db/schema";
 import { eq, desc } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/orgs - List organizations for current user
 export async function GET(request: NextRequest) {
   const session = await auth.api.getSession({

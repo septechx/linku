@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { link, organization, organizationMember } from "@/lib/db/schema";
 import { eq, inArray, desc } from "drizzle-orm";
 
+export const dynamic = "force-dynamic";
+
 // GET /api/links - List all links across all user's organizations
 export async function GET(request: NextRequest) {
   try {
