@@ -339,6 +339,7 @@ export default function AllLinksPage() {
                     <Link
                       href={getShortUrl(linkItem)}
                       target="_blank"
+                      prefetch={false}
                       className="font-body text-sm text-accent hover:underline"
                     >
                       {getShortUrl(linkItem)}
@@ -381,7 +382,7 @@ export default function AllLinksPage() {
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
-                  <Link href={getShortUrl(linkItem)} target="_blank">
+                  <Link href={getShortUrl(linkItem)} target="_blank" prefetch={false}>
                     <Button
                       variant="outline"
                       size="sm"

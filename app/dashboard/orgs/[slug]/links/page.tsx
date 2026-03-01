@@ -445,6 +445,7 @@ export default function LinksPage() {
                     <Link
                       href={getShortUrlLocal(linkItem)}
                       target="_blank"
+                      prefetch={false}
                       className="font-body text-sm text-accent hover-underline"
                     >
                       {getShortUrlLocal(linkItem)}
@@ -487,7 +488,7 @@ export default function LinksPage() {
                   >
                     <Trash2 className="h-3 w-3" />
                   </Button>
-                  <Link href={getShortUrlLocal(linkItem)} target="_blank">
+                  <Link href={getShortUrlLocal(linkItem)} target="_blank" prefetch={false}>
                     <Button
                       variant="outline"
                       size="sm"
