@@ -1,36 +1,80 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Linku
+
+A modern link management and URL shortening platform with organization support.
+
+## Features
+
+- **Link Shortening** – Create shortened URLs with custom slugs
+- **Organization Support** – Manage links across multiple organizations/teams
+- **Global Links** – Create organization-agnostic short links
+- **User Authentication** – Secure email/password authentication via Better Auth
+- **Dashboard** – Intuitive interface for managing links and tracking clicks
+
+## Prerequisites
+
+- [Node.js](https://nodejs.org/) 20+
+- [pnpm](https://pnpm.io/) 10+
 
 ## Getting Started
 
-First, run the development server:
+### 1. Install dependencies
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+pnpm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 1. Set up environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Create a `.env.local` file in the project root, you can use `.env.example` for testing.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp .env.example .env.local
+```
 
-## Learn More
+> **Note**: Generate a secure secret for production using `openssl rand -base64 32`
 
-To learn more about Next.js, take a look at the following resources:
+### 4. Run database migrations
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm db:migrate
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### 5. Start the development server
 
-## Deploy on Vercel
+```bash
+pnpm dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Build for Production
+
+```bash
+pnpm build
+```
+
+This creates an optimized production build in the `.next` directory.
+
+To start the production server:
+
+```bash
+pnpm start
+```
+
+## Available Scripts
+
+| Command             | Description                              |
+| ------------------- | ---------------------------------------- |
+| `pnpm dev`          | Start development server with hot reload |
+| `pnpm build`        | Create production build                  |
+| `pnpm start`        | Start production server                  |
+| `pnpm lint`         | Run ESLint                               |
+| `pnpm format`       | Format code with Prettier                |
+| `pnpm format:check` | Check code formatting                    |
+| `pnpm typecheck`    | Run TypeScript type checking             |
+| `pnpm db:generate`  | Generate Drizzle migrations              |
+| `pnpm db:migrate`   | Run database migrations                  |
+
+## License
+
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0). See [LICENSE](./LICENSE) for details.
