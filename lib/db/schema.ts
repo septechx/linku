@@ -171,6 +171,7 @@ export const userRelations = relations(user, ({ many }) => ({
   sessions: many(session),
   accounts: many(account),
   organizationMemberships: many(organizationMember),
+  invitations: many(invitation),
 }));
 
 export const sessionRelations = relations(session, ({ one }) => ({
@@ -190,6 +191,7 @@ export const accountRelations = relations(account, ({ one }) => ({
 export const organizationRelations = relations(organization, ({ many }) => ({
   members: many(organizationMember),
   links: many(link),
+  invitations: many(invitation),
 }));
 
 export const organizationMemberRelations = relations(organizationMember, ({ one }) => ({
@@ -207,5 +209,44 @@ export const linkRelations = relations(link, ({ one }) => ({
   organization: one(organization, {
     fields: [link.organizationId],
     references: [organization.id],
+  }),
+}));
+
+export const invitation = sqliteTable(
+  "invitation",
+  {
+    id: text("id")
+      .$defaultFn(() => crypto.randomUUID())
+      .primaryKey(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id, { onDelete: "cascade" }),
+    code: text("code").notNull().unique(),
+    role: text("role", { enum: ["member", "admin"] })
+      .notNull()
+      .default("member"),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    expiresAt: integer("expires_at", { mode: "timestamp" }),
+    maxUses: integer("max_uses"),
+    useCount: integer("use_count").notNull().default(0),
+    createdAt: integer("created_at", { mode: "timestamp" })
+      .notNull()
+      .$defaultFn(() => new Date()),
+  },
+  (table) => ({
+    codeIdx: uniqueIndex("invitation_code_idx").on(table.code),
+  }),
+);
+
+export const invitationRelations = relations(invitation, ({ one }) => ({
+  organization: one(organization, {
+    fields: [invitation.organizationId],
+    references: [organization.id],
+  }),
+  creator: one(user, {
+    fields: [invitation.createdBy],
+    references: [user.id],
   }),
 }));

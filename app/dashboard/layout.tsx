@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Building2, Link2, Menu, User, BookOpen, Settings, Crown } from "lucide-react";
+import { Building2, Link2, Menu, User, BookOpen, Settings, Crown, Users } from "lucide-react";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
   const session = await auth.api.getSession({
@@ -231,6 +231,14 @@ function MobileNav({
       >
         <Link2 className="h-4 w-4" />
         Links
+      </Link>
+      <Link
+        href="/dashboard/orgs"
+        prefetch={true}
+        className="flex items-center gap-3 px-4 py-3 font-body text-foreground hover:text-accent hover:bg-secondary transition-luxury"
+      >
+        <Users className="h-4 w-4" />
+        Members
       </Link>
 
       <div className="my-6 mx-4 h-px bg-border"></div>

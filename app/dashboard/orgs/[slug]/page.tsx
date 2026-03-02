@@ -31,6 +31,7 @@ import {
   Crown,
   Shield,
   User,
+  Users,
 } from "lucide-react";
 
 interface Member {
@@ -274,21 +275,42 @@ export default function OrganizationPage({ params }: { params: Promise<{ slug: s
             Access
           </span>
         </div>
-        <Link href={`/dashboard/orgs/${org.slug}/links`}>
-          <article className="group border border-border bg-white p-6 hover:border-accent hover:shadow-sm transition-luxury">
-            <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center border border-border group-hover:border-accent transition-luxury">
-                <Link2 className="h-6 w-6 text-accent" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link href={`/dashboard/orgs/${org.slug}/links`}>
+            <article className="group border border-border bg-white p-6 hover:border-accent hover:shadow-sm transition-luxury">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center border border-border group-hover:border-accent transition-luxury">
+                  <Link2 className="h-6 w-6 text-accent" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg text-foreground group-hover:text-accent transition-luxury">
+                    Links
+                  </h3>
+                  <p className="font-body text-sm text-muted-foreground">
+                    Manage your curated links
+                  </p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-serif text-lg text-foreground group-hover:text-accent transition-luxury">
-                  Links
-                </h3>
-                <p className="font-body text-sm text-muted-foreground">Manage your curated links</p>
+            </article>
+          </Link>
+          <Link href={`/dashboard/orgs/${org.slug}/members`}>
+            <article className="group border border-border bg-white p-6 hover:border-accent hover:shadow-sm transition-luxury">
+              <div className="flex items-center gap-4">
+                <div className="flex h-12 w-12 items-center justify-center border border-border group-hover:border-accent transition-luxury">
+                  <Users className="h-6 w-6 text-accent" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg text-foreground group-hover:text-accent transition-luxury">
+                    Members
+                  </h3>
+                  <p className="font-body text-sm text-muted-foreground">
+                    Manage contributors and invites
+                  </p>
+                </div>
               </div>
-            </div>
-          </article>
-        </Link>
+            </article>
+          </Link>
+        </div>
       </div>
 
       {/* Members */}

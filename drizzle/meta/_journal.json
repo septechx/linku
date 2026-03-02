@@ -8,6 +8,13 @@
       "when": 1772330045134,
       "tag": "0000_heavy_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1772409444584,
+      "tag": "0001_real_nightshade",
+      "breakpoints": true
     }
   ]
 }
